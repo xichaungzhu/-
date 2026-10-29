@@ -37,9 +37,15 @@ function splitFrontmatter(raw) {
 	return { fields, body: (bodyStart < 0 ? "" : text.slice(bodyStart + 1)).trim() };
 }
 
-/** No module-level body cache: editing assets/SKILL.md takes effect on the next read. */
-async function readSkill() {
-	return splitFrontmatter(await readFile(SKILL_PATH, "utf8"));
+/** Skill bodies shipped in this bundle. Both are read fresh from disk on every access. */
+const SKILL_FILES = [
+	{ file: "SKILL.md", fallbackName: "human-voice-copy" },
+	{ file: "copy-audit.md", fallbackName: "copy-audit" }
+];
+
+/** No module-level body cache: editing the markdown takes effect on the next read. */
+async function readSkillFile(file) {
+	return splitFrontmatter(await readFile(join(ASSETS_DIR, file), "utf8"));
 }
 
 async function readState() {
@@ -57,13 +63,13 @@ async function writeState(next) {
 	await rename(tmp, STATE_PATH);
 }
 
-function identity(fields) {
+function identity(fields, fallbackName = PROVIDER_NAME) {
 	const description = fields.description;
 	if (typeof description !== "string" || description.length === 0) {
-		throw new Error("human-voice-copy: assets/SKILL.md frontmatter needs a description");
+		throw new Error(`human-voice-copy: ${fallbackName} frontmatter needs a description`);
 	}
 	return {
-		name: fields.name ?? PROVIDER_NAME,
+		name: fields.name ?? fallbackName,
 		description,
 		...(fields.whenToUse === undefined ? {} : { whenToUse: fields.whenToUse }),
 		invocation: { modelInvocable: true, userInvocable: true },
@@ -80,12 +86,26 @@ const provider = {
 	name: PROVIDER_NAME,
 	async list() {
 		if (!(await readState()).enabled) return [];
-		const { fields } = await readSkill();
-		return [{ ...identity(fields), locator: { path: SKILL_PATH } }];
+		const out = [];
+		for (const entry of SKILL_FILES) {
+			let fields;
+			try {
+				({ fields } = await readSkillFile(entry.file));
+			} catch {
+				continue;
+			}
+			out.push({
+				...identity(fields, entry.fallbackName),
+				locator: { path: join(ASSETS_DIR, entry.file) }
+			});
+		}
+		return out;
 	},
-	async get() {
-		const { fields, body } = await readSkill();
-		return { ...identity(fields), content: body };
+	async get(candidate) {
+		const wanted = candidate?.locator?.path;
+		const entry = SKILL_FILES.find((item) => join(ASSETS_DIR, item.file) === wanted) ?? SKILL_FILES[0];
+		const { fields, body } = await readSkillFile(entry.file);
+		return { ...identity(fields, entry.fallbackName), content: body };
 	}
 };
 
@@ -126,7 +146,7 @@ function readBody(request) {
 /** Resolve a page-supplied file id inside assets: `SKILL.md` or `references/<name>.md`. */
 function resolveAsset(id) {
 	const raw = String(id ?? "");
-	if (raw !== "SKILL.md" && !/^references\/[A-Za-z0-9._-]+\.md$/.test(raw)) return undefined;
+	if (raw !== "SKILL.md" && raw !== "copy-audit.md" && !/^references\/[A-Za-z0-9._-]+\.md$/.test(raw)) return undefined;
 	const target = normalize(join(ASSETS_DIR, raw));
 	if (!target.startsWith(ASSETS_DIR.endsWith(sep) ? ASSETS_DIR : ASSETS_DIR + sep)) return undefined;
 	return target;
