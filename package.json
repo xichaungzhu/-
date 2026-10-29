@@ -1,6 +1,6 @@
 {
   "name": "dsh-human-voice-copy",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "description": "真人语感文案：一个可开关的写作技能 + 边栏页面（brief 生成器、SKILL.md 在线编辑、参考资料预览）。",
   "type": "module",
