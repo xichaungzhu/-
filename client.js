@@ -11,7 +11,7 @@ window.__ModuleLoader__.load({
 		const SAVE = "/human-voice-copy/save";
 		const TOGGLE = "/human-voice-copy/toggle";
 
-		const inject = ["slots", "locale"];
+		const inject = ["slots", "locale", "uiWorkspace"];
 
 		const zh = {
 			panel: "文案工坊",
@@ -27,6 +27,8 @@ window.__ModuleLoader__.load({
 			statusOffHint: "模型看不到这个技能，页面仍可编辑",
 			toggleLabel: "启用人类语感文案技能",
 			toggleFailed: "切换失败",
+			newSession: "新建会话",
+			copyAndChat: "复制并开新会话",
 			studio: "生成指令",
 			studioHint: "选体裁、填场景，拼一条能直接粘进对话的指令",
 			genre: "体裁",
@@ -85,6 +87,8 @@ window.__ModuleLoader__.load({
 			statusOffHint: "Hidden from the model; the page stays editable",
 			toggleLabel: "Enable the human-voice-copy skill",
 			toggleFailed: "Toggle failed",
+			newSession: "New chat",
+			copyAndChat: "Copy + new chat",
 			studio: "Build a brief",
 			studioHint: "Pick a format, add the scene, get a prompt you can paste",
 			genre: "Format",
@@ -164,6 +168,7 @@ window.__ModuleLoader__.load({
 .hvc_id{display:flex;align-items:flex-start;gap:11px;min-width:0}
 .hvc_mark{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--hvc-accent-soft);color:var(--hvc-accent)}
 .hvc_title{margin:0;font-size:16px;font-weight:600;line-height:1.35;letter-spacing:.1px}
+.hvc_ver{margin-left:8px;font-size:10.5px;font-weight:500;color:var(--hvc-muted);border:1px solid var(--hvc-hair);border-radius:999px;padding:1px 6px;vertical-align:3px;letter-spacing:.2px}
 .hvc_sub{margin-top:2px;font-size:12px;line-height:1.5;color:var(--hvc-mute)}
 .hvc_actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
@@ -512,8 +517,9 @@ window.__ModuleLoader__.load({
 
 		/* ---------------- page ---------------- */
 
-		function Page() {
+		function Page(props) {
 			const t = React.useContext(i18nContext);
+			const onNewSession = props?.onNewSession;
 			const [phase, setPhase] = useState("loading");
 			const [data, setData] = useState(null);
 			const [error, setError] = useState("");
@@ -701,13 +707,25 @@ window.__ModuleLoader__.load({
 					h(
 						"div",
 						{ style: { minWidth: 0 } },
-						h("h1", { className: "hvc_title" }, t("title")),
+						h("h1", { className: "hvc_title" }, t("title"), h("span", { className: "hvc_ver" }, "v0.3.1")),
 						h("div", { className: "hvc_sub" }, t("subtitle"))
 					)
 				),
 				h(
 					"div",
 					{ className: "hvc_actions" },
+					h(
+						"button",
+						{
+							type: "button",
+							className: "hvc_btn hvc_btnPrimary hvc_btnSm",
+							onClick: onNewSession,
+							disabled: typeof onNewSession !== "function",
+							title: t("newSession")
+						},
+						h(IconSparkle, { size: 14 }),
+						t("newSession")
+					),
 					data === null
 						? null
 						: h(
@@ -786,6 +804,7 @@ window.__ModuleLoader__.load({
 					"div",
 					{ className: "hvc_gen" },
 					h("button", { type: "button", className: "hvc_btn hvc_btnPrimary", onClick: build }, h(IconSparkle, { size: 14 }), prompt === "" ? t("generate") : t("regenerate")),
+					h("button", { type: "button", className: "hvc_btn hvc_btnGhost", disabled: typeof onNewSession !== "function", onClick: onNewSession }, t("newSession")),
 					h("span", { className: "hvc_genHint" }, t("studioHint"))
 				),
 				prompt === ""
@@ -797,7 +816,25 @@ window.__ModuleLoader__.load({
 								"div",
 								{ className: "hvc_outHead" },
 								h("span", { className: "hvc_outTitle" }, t("promptTitle")),
-								h("button", { type: "button", className: "hvc_btn hvc_btnGhost hvc_btnSm", onClick: () => copy(prompt) }, h(IconCopy, { size: 13 }), t("copy"))
+								h(
+									"div",
+									{ style: { display: "flex", alignItems: "center", gap: 8 } },
+									h("button", { type: "button", className: "hvc_btn hvc_btnGhost hvc_btnSm", onClick: () => copy(prompt) }, h(IconCopy, { size: 13 }), t("copy")),
+									h(
+										"button",
+										{
+											type: "button",
+											className: "hvc_btn hvc_btnPrimary hvc_btnSm",
+											disabled: typeof onNewSession !== "function",
+											onClick: () => {
+												copy(prompt);
+												onNewSession?.();
+											}
+										},
+										h(IconSparkle, { size: 13 }),
+										t("copyAndChat")
+									)
+								)
 							),
 							h("pre", { className: "hvc_outBody" }, prompt)
 					  )
@@ -1026,14 +1063,26 @@ window.__ModuleLoader__.load({
 		function apply(ctx) {
 			ctx.effect(() => ctx.locale.register(NS, { zh, en }), "human-voice-copy: dictionaries");
 			const t = ctx.locale.bind(NS);
-			const Bound = () => h(i18nContext.Provider, { value: t }, h(Page));
-			ctx.slots.inject("main", () => ctx.slots.register({ name: "main", key: PANEL_ID, locale: NS }, Bound));
+			const openSession = () => {
+				try {
+					ctx.uiWorkspace.startSession();
+				} catch {
+					/* 会话服务不可用时静默跳过 */
+				}
+			};
+			const Bound = (props) => h(i18nContext.Provider, { value: t }, h(Page, props));
+			ctx.slots.inject("main", () =>
+				ctx.slots.register({ name: "main", key: PANEL_ID, locale: NS, inject: () => ({ onNewSession: openSession }) }, Bound)
+			);
 			ctx.slots.inject("sidebar.panellist", () =>
 				ctx.slots.register({ name: "sidebar.panellist", id: PANEL_ID, order: 20, locale: NS, label: () => t("panel") }, PanelIcon)
 			);
 			// 设置 → 文案工坊。settings.section 只投影 id/order/label，导航图标由设置外壳按 id 落默认齿轮。
 			ctx.slots.inject("settings.section", () =>
-				ctx.slots.register({ name: "settings.section", id: PANEL_ID, order: 460, locale: NS, label: () => t("panel") }, Bound)
+				ctx.slots.register(
+					{ name: "settings.section", id: PANEL_ID, order: 460, locale: NS, label: () => t("panel"), inject: () => ({ onNewSession: openSession }) },
+					Bound
+				)
 			);
 		}
 

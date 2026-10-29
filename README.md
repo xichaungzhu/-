@@ -12,10 +12,10 @@ plugin_manager install_bundle target=<这个目录的绝对路径>
 
 ### 方式二：GitHub 公开库（分享给别人）
 
-仓库：**https://github.com/xichaungzhu/-**
+仓库：**https://github.com/xichaungzhu/wenan**
 
 ```
-plugin_manager install_bundle target=git+https://github.com/xichaungzhu/-.git
+plugin_manager install_bundle target=git+https://github.com/xichaungzhu/wenan.git
 ```
 
 公开库不需要 token、不需要加协作者，装完重启一次 dsh 即可。
