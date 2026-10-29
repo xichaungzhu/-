@@ -35,9 +35,9 @@
     },
     "install": {
       "preferred": "tarball",
-      "tarball": "https://github.com/[GITHUB_USER]/dsh-human-voice-copy/archive/refs/heads/main.tar.gz",
-      "zip": "https://github.com/[GITHUB_USER]/dsh-human-voice-copy/archive/refs/heads/main.zip",
-      "git": "https://github.com/[GITHUB_USER]/dsh-human-voice-copy.git"
+      "tarball": "https://github.com/xichaungzhu/-/archive/refs/heads/main.tar.gz",
+      "zip": "https://github.com/xichaungzhu/-/archive/refs/heads/main.zip",
+      "git": "https://github.com/xichaungzhu/-.git"
     }
   }
 }
