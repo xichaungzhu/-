@@ -1,0 +1,8 @@
+node_modules/
+*.log
+assets/.state.json
+assets/*.tmp
+*.tgz
+dist/
+.DS_Store
+Thumbs.db

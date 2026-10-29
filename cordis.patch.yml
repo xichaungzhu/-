@@ -1,0 +1,4 @@
+- insert:
+    - id: human-voice-copy
+      name: 'dsh-human-voice-copy'
+      config: {}

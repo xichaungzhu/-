@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Human Voice Copy">
+  <rect width="64" height="64" rx="14" fill="#E8663D"/>
+  <path d="M18 14h28a6 6 0 0 1 6 6v22a6 6 0 0 1-6 6H32l-9 7v-7h-5a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6Z" fill="#FFF7F2"/>
+  <g stroke="#E8663D" stroke-width="3.2" stroke-linecap="round">
+    <line x1="20" y1="24" x2="44" y2="24"/>
+    <line x1="20" y1="31" x2="38" y2="31"/>
+    <line x1="20" y1="38" x2="30" y2="38"/>
+  </g>
+</svg>

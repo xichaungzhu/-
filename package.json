@@ -1,0 +1,41 @@
+{
+  "name": "dsh-human-voice-copy",
+  "version": "0.3.0",
+  "private": true,
+  "description": "真人语感文案：一个可开关的写作技能 + 边栏页面（brief 生成器、SKILL.md 在线编辑、参考资料预览）。",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "assets",
+    "locale/*.json",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    },
+    "install": {
+      "preferred": "tarball",
+      "tarball": "https://github.com/[GITHUB_USER]/dsh-human-voice-copy/archive/refs/heads/main.tar.gz",
+      "zip": "https://github.com/[GITHUB_USER]/dsh-human-voice-copy/archive/refs/heads/main.zip",
+      "git": "https://github.com/[GITHUB_USER]/dsh-human-voice-copy.git"
+    }
+  }
+}
