@@ -10,29 +10,17 @@
 plugin_manager install_bundle target=<这个目录的绝对路径>
 ```
 
-### 方式二：GitHub 私有库（分享给别人）
+### 方式二：GitHub 公开库（分享给别人）
 
-推送方在本目录跑一次：
-
-```powershell
-.\push.ps1
-```
-
-脚本会：检查 `gh` 登录 → 建私有库 → 回填 `package.json` 里的仓库地址 → 推送 `main` 和 tag，最后打印安装命令。
-
-接收方（本机已登过 GitHub，或配了 SSH key）：
+仓库：**https://github.com/xichaungzhu/-**
 
 ```
-plugin_manager install_bundle target=git+ssh://git@github.com/<账号>/dsh-human-voice-copy.git
+plugin_manager install_bundle target=git+https://github.com/xichaungzhu/-.git
 ```
 
-也可以直接加进 profile（不经 bundle 接口）：
+公开库不需要 token、不需要加协作者，装完重启一次 dsh 即可。
 
-```powershell
-dsh plugin --profile desktop add github:<账号>/dsh-human-voice-copy
-```
-
-私有库必须让 pnpm 能拉到代码：**优先用 SSH 地址**；临时可以用带 token 的 HTTPS（`https://<token>@github.com/...`），但别把它写进分享文档。
+要推到自己账号下：`.\push-target.ps1 -Owner <账号> -Repo <仓库名>`；推完记得在 GitHub 仓库设置里把可见性调成 Public。
 
 装完 **重启一次 dsh**：新包第一次声明 `dsh.client`，模块图要重读包清单才会把页面挂上去。
 
